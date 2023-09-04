@@ -690,17 +690,14 @@ class MarkdownBuilder implements md.NodeVisitor {
     TextAlign? textAlign,
   ) {
     final List<Widget> mergedTexts = <Widget>[];
+
     for (final Widget child in children) {
-      if (mergedTexts.isNotEmpty &&
-          mergedTexts.last is RichText &&
-          child is RichText) {
+      if (mergedTexts.isNotEmpty && mergedTexts.last is RichText && child is RichText) {
         final RichText previous = mergedTexts.removeLast() as RichText;
         final TextSpan previousTextSpan = previous.text as TextSpan;
         final List<TextSpan> children = previousTextSpan.children != null
             ? previousTextSpan.children!
-                .map((InlineSpan span) => span is! TextSpan
-                    ? TextSpan(children: <InlineSpan>[span])
-                    : span)
+                .map((InlineSpan span) => span is! TextSpan ? TextSpan(children: <InlineSpan>[span]) : span)
                 .toList()
             : <TextSpan>[previousTextSpan];
         children.add(child.text as TextSpan);
@@ -709,19 +706,25 @@ class MarkdownBuilder implements md.NodeVisitor {
           mergedSpan,
           textAlign: textAlign,
         ));
-      } else if (mergedTexts.isNotEmpty &&
-          mergedTexts.last is SelectableText &&
-          child is SelectableText) {
-        final SelectableText previous =
-            mergedTexts.removeLast() as SelectableText;
-        final TextSpan previousTextSpan = previous.textSpan!;
-        final List<TextSpan> children = previousTextSpan.children != null
-            ? List<TextSpan>.from(previousTextSpan.children!)
-            : <TextSpan>[previousTextSpan];
+      } else if (mergedTexts.isNotEmpty && mergedTexts.last is SelectableText && child is SelectableText) {
+        final SelectableText previous = mergedTexts.removeLast() as SelectableText;
+
+        List<TextSpan> children = [];
+
+        if (previous.textSpan != null) {
+          final TextSpan previousTextSpan = previous.textSpan!;
+
+          children = previousTextSpan.children != null
+              ? List<TextSpan>.from(previousTextSpan.children!)
+              : <TextSpan>[previousTextSpan];
+        }
+
         if (child.textSpan != null) {
           children.add(child.textSpan!);
         }
+
         final TextSpan? mergedSpan = _mergeSimilarTextSpans(children);
+
         mergedTexts.add(
           _buildRichText(
             mergedSpan,
